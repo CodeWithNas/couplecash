@@ -1,18 +1,30 @@
-// Helper functions for localStorage
-function getTransactions() {
+// Utility: load transactions from localStorage
+function loadTransactions() {
   const data = localStorage.getItem('transactions');
   return data ? JSON.parse(data) : [];
 }
 
+// Utility: save transactions array to localStorage
 function saveTransactions(transactions) {
   localStorage.setItem('transactions', JSON.stringify(transactions));
 }
 
-// Render transaction history
+// Render the list of transactions
 function renderTransactions() {
-  const transactions = getTransactions();
+  const transactions = loadTransactions();
   const tbody = document.querySelector('#transactions-table tbody');
+  const emptyState = document.getElementById('empty-state');
+
   tbody.innerHTML = '';
+  if (transactions.length === 0) {
+    emptyState.classList.remove('hidden');
+    return;
+  }
+
+  emptyState.classList.add('hidden');
+  // Sort by most recent
+  transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
   transactions.forEach((t, index) => {
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -27,70 +39,60 @@ function renderTransactions() {
   });
 }
 
-// Update income, expenses, and balance
+// Update summary totals
 function updateSummary() {
-  const transactions = getTransactions();
+  const transactions = loadTransactions();
   let income = 0;
   let expenses = 0;
+
   transactions.forEach(t => {
+    const amount = Number(t.amount);
     if (t.type === 'income') {
-      income += Number(t.amount);
+      income += amount;
     } else {
-      expenses += Number(t.amount);
+      expenses += amount;
     }
   });
+
   document.getElementById('total-income').textContent = `$${income.toFixed(2)}`;
   document.getElementById('total-expenses').textContent = `$${expenses.toFixed(2)}`;
   document.getElementById('balance').textContent = `$${(income - expenses).toFixed(2)}`;
 }
 
-// Add new transaction
-function addTransaction(event) {
+// Handle form submission
+function handleFormSubmit(event) {
   event.preventDefault();
-  const type = document.getElementById('type').value;
-  const amount = document.getElementById('amount').value;
-  const category = document.getElementById('category').value;
-  const date = document.getElementById('date').value;
-  const notes = document.getElementById('notes').value;
 
-  if (!amount || isNaN(amount) || !category || !date) {
-    alert('Please fill out the form correctly.');
+  const type = document.getElementById('type').value;
+  const amount = parseFloat(document.getElementById('amount').value);
+  const category = document.getElementById('category').value.trim();
+  const date = document.getElementById('date').value;
+  const notes = document.getElementById('notes').value.trim();
+
+  if (!type || isNaN(amount) || !category || !date) {
+    alert('Please fill in all required fields.');
     return;
   }
 
-  const transactions = getTransactions();
-  transactions.push({ type, amount: Number(amount), category, date, notes });
+  const transactions = loadTransactions();
+  transactions.push({ type, amount, category, date, notes });
   saveTransactions(transactions);
+
   renderTransactions();
   updateSummary();
   updateChart();
   event.target.reset();
 }
 
-// Delete transaction
+// Delete transaction by index
 function deleteTransaction(index) {
-  const transactions = getTransactions();
+  const transactions = loadTransactions();
   transactions.splice(index, 1);
   saveTransactions(transactions);
   renderTransactions();
   updateSummary();
   updateChart();
 }
-
-// Setup event listeners
-function setup() {
-  document.getElementById('transaction-form').addEventListener('submit', addTransaction);
-  document.querySelector('#transactions-table tbody').addEventListener('click', (e) => {
-    if (e.target.classList.contains('delete-btn')) {
-      deleteTransaction(e.target.dataset.index);
-    }
-  });
-  renderTransactions();
-  updateSummary();
-  initChart();
-}
-
-document.addEventListener('DOMContentLoaded', setup);
 
 // ----- Chart.js -----
 let chart;
@@ -108,9 +110,9 @@ function initChart() {
 
 function updateChart() {
   if (!chart) return;
-  const transactions = getTransactions().filter(t => t.type === 'expense');
+  const expenses = loadTransactions().filter(t => t.type === 'expense');
   const categories = {};
-  transactions.forEach(t => {
+  expenses.forEach(t => {
     categories[t.category] = (categories[t.category] || 0) + Number(t.amount);
   });
   chart.data.labels = Object.keys(categories);
@@ -118,3 +120,19 @@ function updateChart() {
   chart.data.datasets[0].backgroundColor = chart.data.labels.map(() => `hsl(${Math.random()*360},70%,70%)`);
   chart.update();
 }
+
+// Setup event listeners
+function init() {
+  document.getElementById('transaction-form').addEventListener('submit', handleFormSubmit);
+  document.querySelector('#transactions-table tbody').addEventListener('click', e => {
+    if (e.target.classList.contains('delete-btn')) {
+      deleteTransaction(e.target.dataset.index);
+    }
+  });
+
+  renderTransactions();
+  updateSummary();
+  initChart();
+}
+
+document.addEventListener('DOMContentLoaded', init);
