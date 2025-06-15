@@ -9,6 +9,25 @@ function saveTransactions(transactions) {
   localStorage.setItem('transactions', JSON.stringify(transactions));
 }
 
+// Savings goal utilities
+function loadSavingsGoal() {
+  const g = localStorage.getItem('savingsGoal');
+  return g ? parseFloat(g) : 0;
+}
+
+function saveSavingsGoal(goal) {
+  localStorage.setItem('savingsGoal', goal);
+}
+
+function loadSavingsEvents() {
+  const data = localStorage.getItem('savingsEvents');
+  return data ? JSON.parse(data) : [];
+}
+
+function saveSavingsEvents(events) {
+  localStorage.setItem('savingsEvents', JSON.stringify(events));
+}
+
 // Render the list of transactions
 function renderTransactions() {
   const transactions = loadTransactions();
@@ -57,6 +76,7 @@ function updateSummary() {
   document.getElementById('total-income').textContent = `$${income.toFixed(2)}`;
   document.getElementById('total-expenses').textContent = `$${expenses.toFixed(2)}`;
   document.getElementById('balance').textContent = `$${(income - expenses).toFixed(2)}`;
+  updateSavingsProgress();
 }
 
 // Handle form submission
@@ -121,6 +141,40 @@ function updateChart() {
   chart.update();
 }
 
+// Calculate savings for the current month and update progress bar
+function updateSavingsProgress() {
+  const goal = loadSavingsGoal();
+  const now = new Date();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+
+  const transactions = loadTransactions().filter(t => {
+    const d = new Date(t.date);
+    return d.getMonth() === month && d.getFullYear() === year;
+  });
+
+  let income = 0;
+  let expenses = 0;
+  transactions.forEach(t => {
+    const amt = Number(t.amount);
+    if (t.type === 'income') income += amt; else expenses += amt;
+  });
+
+  const manual = loadSavingsEvents().filter(e => {
+    const d = new Date(e.date);
+    return d.getMonth() === month && d.getFullYear() === year;
+  }).reduce((sum, e) => sum + Number(e.amount), 0);
+
+  const savings = (income - expenses) + manual;
+
+  const progress = document.getElementById('goal-progress');
+  const label = document.getElementById('progress-label');
+  if (!progress || !label) return;
+  progress.max = goal || 0;
+  progress.value = savings > 0 ? savings : 0;
+  label.textContent = `$${savings.toFixed(2)} / $${goal.toFixed(2)}`;
+}
+
 // Setup event listeners
 function init() {
   document.getElementById('transaction-form').addEventListener('submit', handleFormSubmit);
@@ -129,6 +183,35 @@ function init() {
       deleteTransaction(e.target.dataset.index);
     }
   });
+
+  const setGoalBtn = document.getElementById('set-goal-btn');
+  const addSavingBtn = document.getElementById('add-saving-btn');
+  const goalInput = document.getElementById('goal-input');
+  const savingInput = document.getElementById('saving-input');
+
+  if (goalInput) goalInput.value = loadSavingsGoal();
+  if (setGoalBtn) {
+    setGoalBtn.addEventListener('click', () => {
+      const val = parseFloat(goalInput.value);
+      if (!isNaN(val)) {
+        saveSavingsGoal(val);
+        updateSavingsProgress();
+      }
+    });
+  }
+
+  if (addSavingBtn) {
+    addSavingBtn.addEventListener('click', () => {
+      const amt = parseFloat(savingInput.value);
+      if (!isNaN(amt) && amt > 0) {
+        const events = loadSavingsEvents();
+        events.push({ amount: amt, date: new Date().toISOString().slice(0,10) });
+        saveSavingsEvents(events);
+        savingInput.value = '';
+        updateSavingsProgress();
+      }
+    });
+  }
 
   renderTransactions();
   updateSummary();
