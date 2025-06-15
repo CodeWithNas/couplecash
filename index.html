@@ -53,6 +53,21 @@
       </div>
     </section>
 
+    <!-- Savings Goal -->
+    <section id="savings-goal">
+      <h2>Savings Goal</h2>
+      <div class="goal-controls">
+        <input type="number" id="goal-input" placeholder="Monthly goal" step="0.01" min="0">
+        <button id="set-goal-btn">Set Goal</button>
+      </div>
+      <div class="saving-controls">
+        <input type="number" id="saving-input" placeholder="Manual saving" step="0.01" min="0">
+        <button id="add-saving-btn">Add Saving</button>
+      </div>
+      <progress id="goal-progress" value="0" max="0"></progress>
+      <div id="progress-label">$0.00 / $0.00</div>
+    </section>
+
     <!-- Transactions List -->
     <section id="transactions">
       <h2>Transactions</h2>
