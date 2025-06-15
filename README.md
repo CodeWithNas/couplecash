@@ -8,6 +8,8 @@ A simple browser-based finance tracker for couples. CoupleCash lets you record i
 - View a sortable transaction list and delete entries
 - See total income, total expenses and balance at a glance
 - Placeholder pie chart for expenses by category (Chart.js)
+- Line chart of income vs expenses over time with average spending indicator
+- Monthly history view with quick summaries
 - Responsive, mobile-friendly design
 
 ## Setup & Usage

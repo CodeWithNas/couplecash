@@ -122,6 +122,16 @@ button:hover {
   margin-top: 1rem;
 }
 
+#trend-section canvas {
+  max-width: 100%;
+  margin-top: 1rem;
+}
+
+/* History */
+#history select {
+  margin-bottom: 1rem;
+}
+
 @media (max-width: 600px) {
   .form-group {
     flex: 1 1 100%;

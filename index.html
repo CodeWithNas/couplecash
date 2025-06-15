@@ -53,6 +53,18 @@
       </div>
     </section>
 
+    <!-- History View -->
+    <section id="history">
+      <h2>History</h2>
+      <select id="month-select"></select>
+      <div class="summary-grid">
+        <div class="summary-item">Income: <span id="history-income">$0.00</span></div>
+        <div class="summary-item">Expenses: <span id="history-expenses">$0.00</span></div>
+        <div class="summary-item">Balance: <span id="history-balance">$0.00</span></div>
+        <div class="summary-item">Savings: <span id="history-savings">$0.00</span></div>
+      </div>
+    </section>
+
     <!-- Transactions List -->
     <section id="transactions">
       <h2>Transactions</h2>
@@ -76,6 +88,12 @@
     <section id="chart-section">
       <h2>Expenses by Category</h2>
       <canvas id="expense-chart" width="300" height="300"></canvas>
+    </section>
+
+    <!-- Trend Chart -->
+    <section id="trend-section">
+      <h2>Income vs Expenses</h2>
+      <canvas id="trend-chart" width="300" height="200"></canvas>
     </section>
   </main>
 

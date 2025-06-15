@@ -1,12 +1,42 @@
+const TRANSACTIONS_KEY = 'transactions';
+const SUMMARY_KEY = 'monthlySummary';
+
 // Utility: load transactions from localStorage
 function loadTransactions() {
-  const data = localStorage.getItem('transactions');
+  const data = localStorage.getItem(TRANSACTIONS_KEY);
   return data ? JSON.parse(data) : [];
 }
 
-// Utility: save transactions array to localStorage
+// Utility: save transactions array to localStorage and update summaries
 function saveTransactions(transactions) {
-  localStorage.setItem('transactions', JSON.stringify(transactions));
+  localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
+  updateMonthlySummaries(transactions);
+}
+
+// Load monthly summaries
+function loadSummaries() {
+  const data = localStorage.getItem(SUMMARY_KEY);
+  return data ? JSON.parse(data) : {};
+}
+
+// Compute and store summaries by month
+function updateMonthlySummaries(transactions) {
+  const summary = {};
+  transactions.forEach(t => {
+    const month = t.date.slice(0, 7); // YYYY-MM
+    if (!summary[month]) summary[month] = { income: 0, expenses: 0 };
+    if (t.type === 'income') summary[month].income += Number(t.amount);
+    else summary[month].expenses += Number(t.amount);
+  });
+  Object.keys(summary).forEach(m => {
+    const s = summary[m];
+    s.balance = s.income - s.expenses;
+    s.savings = s.balance;
+  });
+  localStorage.setItem(SUMMARY_KEY, JSON.stringify(summary));
+  renderHistoryDropdown();
+  renderHistorySummary(document.getElementById('month-select').value);
+  updateTrendChart();
 }
 
 // Render the list of transactions
@@ -59,6 +89,37 @@ function updateSummary() {
   document.getElementById('balance').textContent = `$${(income - expenses).toFixed(2)}`;
 }
 
+// Render history dropdown options
+function renderHistoryDropdown() {
+  const select = document.getElementById('month-select');
+  if (!select) return;
+  const summaries = loadSummaries();
+  const months = Object.keys(summaries).sort().reverse();
+  const current = select.value;
+  select.innerHTML = '';
+  months.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = m;
+    select.appendChild(opt);
+  });
+  if (months.length && !months.includes(current)) {
+    select.value = months[0];
+  } else {
+    select.value = current;
+  }
+}
+
+// Render summary for selected month
+function renderHistorySummary(month) {
+  const summaries = loadSummaries();
+  const data = summaries[month] || { income: 0, expenses: 0, balance: 0, savings: 0 };
+  document.getElementById('history-income').textContent = `$${data.income.toFixed(2)}`;
+  document.getElementById('history-expenses').textContent = `$${data.expenses.toFixed(2)}`;
+  document.getElementById('history-balance').textContent = `$${data.balance.toFixed(2)}`;
+  document.getElementById('history-savings').textContent = `$${data.savings.toFixed(2)}`;
+}
+
 // Handle form submission
 function handleFormSubmit(event) {
   event.preventDefault();
@@ -96,6 +157,7 @@ function deleteTransaction(index) {
 
 // ----- Chart.js -----
 let chart;
+let trendChart;
 
 function initChart() {
   const ctx = document.getElementById('expense-chart');
@@ -106,6 +168,21 @@ function initChart() {
     options: { plugins: { legend: { position: 'bottom' } } }
   });
   updateChart();
+}
+
+function initTrendChart() {
+  const ctx = document.getElementById('trend-chart');
+  if (!ctx) return;
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+  updateTrendChart();
 }
 
 function updateChart() {
@@ -121,6 +198,23 @@ function updateChart() {
   chart.update();
 }
 
+function updateTrendChart() {
+  if (!trendChart) return;
+  const summaries = loadSummaries();
+  const months = Object.keys(summaries).sort();
+  const incomeData = months.map(m => summaries[m].income);
+  const expenseData = months.map(m => summaries[m].expenses);
+  const avgExpense = expenseData.length ? (expenseData.reduce((a, b) => a + b, 0) / expenseData.length) : 0;
+  const avgData = months.map(() => avgExpense);
+  trendChart.data.labels = months;
+  trendChart.data.datasets = [
+    { label: 'Income', data: incomeData, borderColor: 'green', fill: false },
+    { label: 'Expenses', data: expenseData, borderColor: 'red', fill: false },
+    { label: 'Avg Expense', data: avgData, borderColor: 'orange', borderDash: [5,5], fill: false }
+  ];
+  trendChart.update();
+}
+
 // Setup event listeners
 function init() {
   document.getElementById('transaction-form').addEventListener('submit', handleFormSubmit);
@@ -130,9 +224,26 @@ function init() {
     }
   });
 
+  const monthSelect = document.getElementById('month-select');
+  if (monthSelect) {
+    monthSelect.addEventListener('change', e => {
+      renderHistorySummary(e.target.value);
+    });
+  }
+
   renderTransactions();
   updateSummary();
   initChart();
+  initTrendChart();
+
+  // ensure summaries exist for stored transactions
+  if (Object.keys(loadSummaries()).length === 0) {
+    updateMonthlySummaries(loadTransactions());
+  } else {
+    renderHistoryDropdown();
+    renderHistorySummary(monthSelect.value);
+    updateTrendChart();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
