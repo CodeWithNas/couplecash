@@ -44,7 +44,7 @@ function renderTransactions() {
   // Sort by most recent
   transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  transactions.forEach((t, index) => {
+  transactions.forEach(t => {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${t.type}</td>
@@ -52,7 +52,7 @@ function renderTransactions() {
       <td>${t.category}</td>
       <td>${t.date}</td>
       <td>${t.notes || ''}</td>
-      <td><button class="delete-btn" data-index="${index}">Delete</button></td>
+      <td><button class="delete-btn" data-id="${t.id}">Delete</button></td>
     `;
     tbody.appendChild(row);
   });
@@ -95,7 +95,7 @@ function handleFormSubmit(event) {
   }
 
   const transactions = loadTransactions();
-  transactions.push({ type, amount, category, date, notes });
+  transactions.push({ id: Date.now(), type, amount, category, date, notes });
   saveTransactions(transactions);
 
   renderTransactions();
@@ -104,14 +104,17 @@ function handleFormSubmit(event) {
   event.target.reset();
 }
 
-// Delete transaction by index
-function deleteTransaction(index) {
+// Delete transaction by id
+function deleteTransaction(id) {
   const transactions = loadTransactions();
-  transactions.splice(index, 1);
-  saveTransactions(transactions);
-  renderTransactions();
-  updateSummary();
-  updateChart();
+  const index = transactions.findIndex(t => String(t.id) === String(id));
+  if (index !== -1) {
+    transactions.splice(index, 1);
+    saveTransactions(transactions);
+    renderTransactions();
+    updateSummary();
+    updateChart();
+  }
 }
 
 // ----- Chart.js -----
@@ -180,7 +183,7 @@ function init() {
   document.getElementById('transaction-form').addEventListener('submit', handleFormSubmit);
   document.querySelector('#transactions-table tbody').addEventListener('click', e => {
     if (e.target.classList.contains('delete-btn')) {
-      deleteTransaction(e.target.dataset.index);
+      deleteTransaction(e.target.dataset.id);
     }
   });
 
