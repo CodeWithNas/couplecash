@@ -1,66 +1,87 @@
+/* Base Styles */
 * {
   box-sizing: border-box;
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.6;
   margin: 0;
-  padding: 0;
-  background-color: #f5f6fa;
+  background-color: #f7f9fc;
   color: #333;
 }
 
 header {
-  background-color: #4a90e2;
-  color: white;
+  background-color: #6a8caf;
+  color: #fff;
   padding: 1rem;
   text-align: center;
 }
 
 main {
   max-width: 800px;
-  margin: 1rem auto;
-  padding: 0 1rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+section {
+  margin-bottom: 2rem;
 }
 
 h2 {
-  margin-top: 2rem;
-  color: #4a90e2;
+  margin-bottom: 1rem;
+  color: #6a8caf;
 }
 
-form {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 0.5rem 1rem;
-  align-items: center;
+/* Form Styles */
+#transaction-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
-.form-row {
-  display: contents;
+.form-group {
+  flex: 1 1 150px;
+  display: flex;
+  flex-direction: column;
 }
 
-form button {
-  grid-column: 2 / 3;
+.full-width {
+  flex: 1 1 100%;
+}
+
+button {
   padding: 0.5rem 1rem;
-  background-color: #4a90e2;
-  color: white;
   border: none;
+  background-color: #6a8caf;
+  color: #fff;
   cursor: pointer;
 }
 
-.summary-grid {
-  display: flex;
-  justify-content: space-between;
-  background: #fff;
-  padding: 1rem;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+button:hover {
+  background-color: #587893;
 }
 
+/* Summary */
+.summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.summary-item {
+  flex: 1 1 200px;
+  background-color: #fff;
+  border-radius: 4px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Transactions Table */
 #transactions-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
 }
 
 #transactions-table th,
@@ -71,23 +92,38 @@ form button {
 }
 
 #transactions-table th {
-  background-color: #f0f0f0;
+  background-color: #eef1f5;
 }
 
 .delete-btn {
-  background-color: #e74c3c;
-  color: white;
+  background-color: #e76f51;
   border: none;
+  color: #fff;
   padding: 0.25rem 0.5rem;
   cursor: pointer;
 }
 
-@media (max-width: 600px) {
-  form {
-    grid-template-columns: 1fr;
-  }
+.delete-btn:hover {
+  background-color: #d85c3f;
+}
 
-  form button {
-    grid-column: 1 / 2;
+#empty-state {
+  margin-top: 0.5rem;
+  color: #666;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Chart Section */
+#chart-section canvas {
+  max-width: 100%;
+  margin-top: 1rem;
+}
+
+@media (max-width: 600px) {
+  .form-group {
+    flex: 1 1 100%;
   }
 }

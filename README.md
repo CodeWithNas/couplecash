@@ -1,35 +1,29 @@
 # CoupleCash
 
-A simple finance tracker for couples. This lightweight web application allows you and your partner to manage income and expenses directly in the browser. All data is stored locally using `localStorage` so no server is required.
+A simple browser-based finance tracker for couples. CoupleCash lets you record income and expenses, view a running balance, and visualize spending right in your browser. All data is stored locally using `localStorage`, so no server setup is required.
 
 ## Features
 
-- Add income and expense transactions with category, date and notes
-- View a running transaction history with the ability to delete entries
-- See total income, total expenses and current balance at a glance
-- Optional pie chart showing expenses per category (powered by Chart.js)
-- Data persists between sessions using `localStorage`
-- Responsive design that works well on mobile and desktop
+- Add income or expense transactions with category, date and notes
+- View a sortable transaction list and delete entries
+- See total income, total expenses and balance at a glance
+- Placeholder pie chart for expenses by category (Chart.js)
+- Responsive, mobile-friendly design
 
-## Usage
+## Setup & Usage
 
-1. Open `index.html` in your browser (or host the project with GitHub Pages).
-2. Use the **Add Transaction** form to enter income or expenses.
-3. Your financial summary and transaction history update automatically.
-4. Transactions and totals will be restored whenever you return to the page.
+1. Clone or download this repository.
+2. Open `index.html` in your browser, or host the project with GitHub Pages.
+3. Use the **Add Transaction** form to record income or expenses.
+4. Your data is saved automatically in the browser and will be restored when you revisit the page.
 
-## Development
+## GitHub Pages Hosting
 
-This project uses only vanilla JavaScript, HTML and CSS. Feel free to fork and customize it for your own needs.
+To publish the app using GitHub Pages:
 
-```bash
-# File structure
-index.html
-style.css
-script.js
-```
-
-No build tools or dependencies are required. To view the project online, push it to a GitHub repository and enable GitHub Pages.
+1. Push the project to a GitHub repository.
+2. In the repository settings, enable **GitHub Pages** and choose the main branch.
+3. Visit the generated URL to use CoupleCash online.
 
 ## License
 
