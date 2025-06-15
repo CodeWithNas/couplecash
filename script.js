@@ -79,12 +79,26 @@ function updateSummary() {
   updateSavingsProgress();
 }
 
+function toggleSavingsField() {
+  const typeSelect = document.getElementById('type');
+  const group = document.getElementById('savings-group');
+  const input = document.getElementById('savings');
+  if (!typeSelect || !group) return;
+  if (typeSelect.value === 'income') {
+    group.classList.remove('hidden');
+  } else {
+    group.classList.add('hidden');
+    if (input) input.value = '';
+  }
+}
+
 // Handle form submission
 function handleFormSubmit(event) {
   event.preventDefault();
 
   const type = document.getElementById('type').value;
   const amount = parseFloat(document.getElementById('amount').value);
+  const savingsInput = document.getElementById('savings');
   const category = document.getElementById('category').value.trim();
   const date = document.getElementById('date').value;
   const notes = document.getElementById('notes').value.trim();
@@ -94,14 +108,26 @@ function handleFormSubmit(event) {
     return;
   }
 
+  let savings = 0;
+  if (type === 'income') {
+    const val = parseFloat(savingsInput.value);
+    savings = isNaN(val) ? 0 : val;
+    if (savings > amount) {
+      alert('Savings allocation cannot exceed the income amount.');
+      return;
+    }
+  }
+
   const transactions = loadTransactions();
-  transactions.push({ id: Date.now(), type, amount, category, date, notes });
+  transactions.push({ id: Date.now(), type, amount, category, date, notes, savings });
   saveTransactions(transactions);
 
   renderTransactions();
   updateSummary();
   updateChart();
   event.target.reset();
+  savingsInput.value = '';
+  toggleSavingsField();
 }
 
 // Delete transaction by id
@@ -156,19 +182,16 @@ function updateSavingsProgress() {
     return d.getMonth() === month && d.getFullYear() === year;
   });
 
-  let income = 0;
-  let expenses = 0;
-  transactions.forEach(t => {
-    const amt = Number(t.amount);
-    if (t.type === 'income') income += amt; else expenses += amt;
-  });
+  const allocated = transactions
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + Number(t.savings || 0), 0);
 
   const manual = loadSavingsEvents().filter(e => {
     const d = new Date(e.date);
     return d.getMonth() === month && d.getFullYear() === year;
   }).reduce((sum, e) => sum + Number(e.amount), 0);
 
-  const savings = (income - expenses) + manual;
+  const savings = allocated + manual;
 
   const progress = document.getElementById('goal-progress');
   const label = document.getElementById('progress-label');
@@ -186,6 +209,12 @@ function init() {
       deleteTransaction(e.target.dataset.id);
     }
   });
+
+  const typeSelect = document.getElementById('type');
+  if (typeSelect) {
+    typeSelect.addEventListener('change', toggleSavingsField);
+  }
+  toggleSavingsField();
 
   const setGoalBtn = document.getElementById('set-goal-btn');
   const addSavingBtn = document.getElementById('add-saving-btn');
