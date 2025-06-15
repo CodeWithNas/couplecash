@@ -27,14 +27,35 @@ function renderTransactions() {
 
   transactions.forEach((t, index) => {
     const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${t.type}</td>
-      <td>$${Number(t.amount).toFixed(2)}</td>
-      <td>${t.category}</td>
-      <td>${t.date}</td>
-      <td>${t.notes || ''}</td>
-      <td><button class="delete-btn" data-index="${index}">Delete</button></td>
-    `;
+
+    const typeCell = document.createElement('td');
+    typeCell.textContent = t.type;
+    row.appendChild(typeCell);
+
+    const amountCell = document.createElement('td');
+    amountCell.textContent = `$${Number(t.amount).toFixed(2)}`;
+    row.appendChild(amountCell);
+
+    const categoryCell = document.createElement('td');
+    categoryCell.textContent = t.category;
+    row.appendChild(categoryCell);
+
+    const dateCell = document.createElement('td');
+    dateCell.textContent = t.date;
+    row.appendChild(dateCell);
+
+    const notesCell = document.createElement('td');
+    notesCell.textContent = t.notes || '';
+    row.appendChild(notesCell);
+
+    const actionsCell = document.createElement('td');
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.dataset.index = index;
+    deleteBtn.textContent = 'Delete';
+    actionsCell.appendChild(deleteBtn);
+    row.appendChild(actionsCell);
+
     tbody.appendChild(row);
   });
 }
